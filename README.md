@@ -14,7 +14,8 @@ Included in the package are:
 * rviz directory, including the prepared RVIZ configuration file
 
 The bash-script (ros_exam.sh) contains the commands necessary to launch the package for manual driving and mapping (31.05.23).
-For the creation of the world it is necessary to modify the GAZEBO_MODEL_PATH in .bashrc (export GAZEBO_MODEL_PATH=~/ros2_ws/src/mobile_robotics_hschoon/meshes).
+For the creation of the world it is necessary to modify the GAZEBO_MODEL_PATH in .bashrc:
+**export GAZEBO_MODEL_PATH=~/ros2_ws/src/mobile_robotics_hschoon/meshes**
 
 - [X] Robot designed and loads into world.
 - [X] Basic moving possible and dimensions (physics) adapted.
