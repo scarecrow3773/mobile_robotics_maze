@@ -19,6 +19,7 @@ For the creation of the world it is necessary to modify the GAZEBO_MODEL_PATH in
 
 - [X] Robot designed and loads into world.
 - [X] Basic moving possible and dimensions (physics) adapted.
+- [X] Included libgazebo_ros_camera.
 - [ ] Autonomous movement
 - [ ] Map building
 - [ ] Identifying the position of the yellow square and publishing it in the correct format.
