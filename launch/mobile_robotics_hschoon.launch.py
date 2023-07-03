@@ -39,10 +39,10 @@ def generate_launch_description():
         parameters=[params]
     )
 
-    #position = [0.6, 0.8, 1] 
-    position = [19, 25, 1]                     
-    orientation = [0.0, 0.0, -0.7]
-    #orientation = [0.0, 0.0, -1.7]
+    position = [0.6, 0.8, 1] 
+    #position = [19, 25, 1]                     
+    #orientation = [0.0, 0.0, -0.7]
+    orientation = [0.0, 0.0, -1.7]
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
                         arguments=['-topic', 'robot_description',
                                    '-entity', 'simple_robot',
