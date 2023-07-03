@@ -270,7 +270,7 @@
   </gazebo>
 	
   <gazebo reference="camera_point_link">
-    <sensor type="camera" name="camera1">
+    <sensor type="camera" name="camera">
       <update_rate>30.0</update_rate>
       <camera name="head">
         <pose>0 0 0 0 0 0</pose>
