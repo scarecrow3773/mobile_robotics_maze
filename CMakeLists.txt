@@ -7,6 +7,14 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+find_package(rclpy REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(rclpy REQUIRED)
+find_package(cv_bridge REQUIRED)
+#find_package(opencv-python REQUIRED)
+#find_package(numpy REQUIRED)
+#find_package(math REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -23,6 +31,14 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+# Install Python modules
+ament_python_install_package(${PROJECT_NAME})
+
+# Install Python executables
+install(PROGRAMS
+  scripts/find_yellow.py
+  DESTINATION lib/${PROJECT_NAME})
+
 install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch
@@ -35,4 +51,6 @@ install(DIRECTORY rviz
   DESTINATION share/${PROJECT_NAME})  
 install(DIRECTORY meshes
   DESTINATION share/${PROJECT_NAME})    
+install(DIRECTORY scripts
+  DESTINATION share/${PROJECT_NAME})  
 ament_package()

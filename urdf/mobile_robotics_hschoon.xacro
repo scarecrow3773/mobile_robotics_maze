@@ -23,7 +23,7 @@
         </inertial>
         <collision name="chassis">
             <geometry>
-                <box size="0.5 0.278 0.245" />
+                <box size="0.5 0.278 0.245" /> <!-- HERE: "0.5 0.278 0.245" -->
             </geometry>
         </collision>
         <visual name="chassis">
@@ -31,7 +31,7 @@
                 <mesh filename="$(find mobile_robotics_hschoon)/meshes/chassis_v2.stl" scale="1.5 1.5 1.5" />
             </geometry>
             <origin xyz="0.0 0.0 0.05" rpy="0 0 3.14159"/>
-            <material name="Grey" />
+            <!-- <material name="Grey" /> -->
         </visual>
     </link>       
 
@@ -43,7 +43,7 @@
         </inertial>
         <collision name="castor">
             <geometry>
-                <sphere radius=".04275" />
+                <sphere radius=".043" /> <!-- HERE: ".04275" -->
             </geometry>
         </collision>              
         <visual name="castor">
@@ -61,12 +61,14 @@
         </inertial>
         <collision name="left_wheel">
             <geometry>
-                <mesh filename="$(find mobile_robotics_hschoon)/meshes/wheel.stl" scale="1.5 1.5 1.5" />
+                <!-- <mesh filename="$(find mobile_robotics_hschoon)/meshes/wheel.stl" scale="1.5 1.5 1.5" /> -->
+                <cylinder length="0.04" radius="0.043"/>
             </geometry>       
         </collision>
         <visual name="left_wheel">
             <geometry>
-                <mesh filename="$(find mobile_robotics_hschoon)/meshes/wheel.stl" scale="1.5 1.5 1.5" />
+                <!-- <mesh filename="$(find mobile_robotics_hschoon)/meshes/wheel.stl" scale="1.5 1.5 1.5" /> -->
+                <cylinder length="0.04" radius="0.043"/>
             </geometry>               
         </visual>
     </link> 
@@ -79,12 +81,14 @@
         </inertial>
         <collision name="right_wheel">
             <geometry>
-                <mesh filename="$(find mobile_robotics_hschoon)/meshes/wheel.stl" scale="1.5 1.5 1.5" />
+                <!-- <mesh filename="$(find mobile_robotics_hschoon)/meshes/wheel.stl" scale="1.5 1.5 1.5" /> -->
+                <cylinder length="0.04" radius="0.043"/>
             </geometry>             
         </collision>
         <visual name="right_wheel">
             <geometry>
-                <mesh filename="$(find mobile_robotics_hschoon)/meshes/wheel.stl" scale="1.5 1.5 1.5" />
+                <!-- <mesh filename="$(find mobile_robotics_hschoon)/meshes/wheel.stl" scale="1.5 1.5 1.5" /> -->
+                <cylinder length="0.04" radius="0.043"/>
             </geometry>         
         </visual>
     </link>            
@@ -156,8 +160,8 @@
     <joint type="continuous" name="wheel_left_joint">
         <parent link="chassis"/>
         <child link="left_wheel"/>
-        <origin xyz="-0.167 0.0834 -0.14" rpy="0 1.5707 0"/>
-        <axis xyz="0 1 0"/>
+        <origin xyz="-0.187 0.0834 -0.14" rpy="0 1.5707 1.5707"/> <!-- HERE: "0 1.5707 0" -->
+        <axis xyz="0 0 1"/> <!-- HERE: ""0 1 0" -->
         <calibration rising="0.0"/>
         <dynamics damping="0.0" friction="0.0"/>
         <limit effort="30" velocity="2.0" />
@@ -167,8 +171,8 @@
     <joint type="continuous" name="wheel_right_joint">
         <parent link="chassis"/>
         <child link="right_wheel"/>
-        <origin xyz="-0.167 -0.0834 -0.14" rpy="-3.14159 -1.5707 0"/>
-        <axis xyz="0 -1 0"/>
+        <origin xyz="-0.187 -0.0834 -0.14" rpy="0 1.5707 1.5707"/> <!-- HERE: "-3.14159 -1.5707 0" -->
+        <axis xyz="0 0 1"/>  <!-- HERE: ""0 -1 0" -->
         <calibration rising="0.0"/>
         <dynamics damping="0.0" friction="0.0"/>
         <limit effort="30" velocity="2.0" />
@@ -176,14 +180,14 @@
     </joint>
         <joint name="camera_joint" type="fixed">
         <axis xyz="0 1 0" />
-        <origin xyz="-0.1 0 .4" rpy="0 0 0"/>
+        <origin xyz="-0.1 0 .2" rpy="0 0 0"/>
         <parent link="base_link"/>
         <child link="camera_point_link"/>
             <dynamics damping="0.7"/>
     </joint>
     <joint name="hokuyo_joint" type="fixed">
         <axis xyz="0 1 0" />
-        <origin xyz="-0.1 0 .14" rpy="0 0 3.1415926535897931"/>
+        <origin xyz="-0.1 0 .15" rpy="0 0 3.1415926535897931"/> <!-- HERE: "-0.1 0 .14" -->
         <parent link="base_link"/>
         <child link="hokuyo_link"/>
             <dynamics damping="0.7"/>
@@ -242,7 +246,7 @@
     	<material>Gazebo/Red</material>
     	<mu1>100000</mu1>
     	<mu2>100000</mu2>
-        <fdir1>0.000000 0.000000 0.000000</fdir1>
+        <fdir1>1.000000 0.000000 0.000000</fdir1>
         <slip1>0.000000</slip1>
         <slip2>0.000000</slip2>    
   </gazebo>  
@@ -251,7 +255,7 @@
     	<material>Gazebo/Yellow</material>
     	<mu1>100000</mu1>
     	<mu2>100000</mu2>  	
-        <fdir1>0.000000 0.000000 0.000000</fdir1>
+        <fdir1>1.000000 0.000000 0.000000</fdir1>
         <slip1>0.000000</slip1>
         <slip2>0.000000</slip2>    
   </gazebo>  
@@ -260,7 +264,7 @@
   	<material>Gazebo/Blue</material>
     	<mu1>.01</mu1>
     	<mu2>.01</mu2>  	
-        <fdir1>0.000000 0.000000 0.000000</fdir1>
+        <fdir1>1.000000 0.000000 0.000000</fdir1>
         <slip1>1.000000</slip1>
         <slip2>1.000000</slip2>     	
   </gazebo>
@@ -329,7 +333,7 @@
         </scan>
         <range>
           <min>0.120000</min>
-          <max>3.5</max>
+          <max>13.5</max>
           <resolution>0.015000</resolution>
         </range>
         <noise>
