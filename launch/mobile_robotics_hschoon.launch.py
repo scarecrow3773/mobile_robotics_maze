@@ -39,10 +39,12 @@ def generate_launch_description():
         parameters=[params]
     )
 
-    position = [0.6, 0.8, 1] 
-    #position = [19, 25, 1]                     
+    #position = [0.6, 0.8, 1] 
+    #position = [19, 25, 1]  
+    position = [22, 25, .2]                   
     #orientation = [0.0, 0.0, -0.7]
     orientation = [0.0, 0.0, -1.7]
+    #orientation = [0.0, 0.0, 0.0]
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
                         arguments=['-topic', 'robot_description',
                                    '-entity', 'simple_robot',
@@ -60,7 +62,10 @@ def generate_launch_description():
              'joint_state_broadcaster'],
         output='screen'
     )
-
+    
+    #slam = Node(package='slam_toolbox', executable='online_async_launch.py',
+    #            parameters=[{'use_sim_time': True}, {'slam':=True}])
+    
     load_simple_diff_drive_controller = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'simple_diff_drive_controller'],
@@ -75,7 +80,6 @@ def generate_launch_description():
     )
     
     
-
     return LaunchDescription([
         RegisterEventHandler(
             event_handler=OnProcessExit(
@@ -94,4 +98,5 @@ def generate_launch_description():
         spawn_entity,
         rviz_entity,
         node_test,
+        #slam,
     ])
