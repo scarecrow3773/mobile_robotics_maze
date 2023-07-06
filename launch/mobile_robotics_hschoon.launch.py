@@ -19,15 +19,16 @@ def generate_launch_description():
                     get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
                     launch_arguments={'world': world_path}.items()
              )
-
+             
+    
     xacro_file = os.path.join(get_package_share_directory('mobile_robotics_hschoon'),
                               'urdf',
-                              #'simple_robot_nav2.urdf.xacro')
+                              #'mobile_robotics_hschoon.urdf')
                               'mobile_robotics_hschoon.xacro')
     rviz_file = os.path.join(get_package_share_directory('mobile_robotics_hschoon'),
-                              'rviz',
-                              #'simple_robot_nav2.rviz')    
-                              'mobile_robotics_hschoon.rviz')                           
+                              'rviz',   
+                              'mobile_robotics_hschoon.rviz')         
+                                                
     doc = xacro.parse(open(xacro_file))
     xacro.process_doc(doc)
     params = {'robot_description': doc.toxml()}
@@ -41,9 +42,9 @@ def generate_launch_description():
 
     #position = [0.6, 0.8, 1] 
     #position = [19, 25, 1]  
-    position = [22, 25, .2]                   
-    #orientation = [0.0, 0.0, -0.7]
-    orientation = [0.0, 0.0, -1.7]
+    position = [21, 24, .2]                   
+    orientation = [0.0, 0.0, -0.7]
+    #orientation = [0.0, 0.0, -1.7]
     #orientation = [0.0, 0.0, 0.0]
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
                         arguments=['-topic', 'robot_description',
@@ -62,9 +63,6 @@ def generate_launch_description():
              'joint_state_broadcaster'],
         output='screen'
     )
-    
-    #slam = Node(package='slam_toolbox', executable='online_async_launch.py',
-    #            parameters=[{'use_sim_time': True}, {'slam':=True}])
     
     load_simple_diff_drive_controller = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
@@ -97,6 +95,5 @@ def generate_launch_description():
         node_robot_state_publisher,
         spawn_entity,
         rviz_entity,
-        node_test,
-        #slam,
+        node_test
     ])

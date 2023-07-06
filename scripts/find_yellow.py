@@ -11,10 +11,11 @@ import cv2 # OpenCV library
 import numpy as np
 import math
 
+from std_msgs.msg import Bool
 from nav_msgs.msg import Odometry
 
 #globall variables
-MINIMUM_YELLOW = 200 
+MINIMUM_YELLOW = 100 
 PositionMarked = 80
 alive = 0 
 
@@ -23,7 +24,25 @@ actual_position_y = 0.0
 actual_position_z = 0.0 
 actual_orientation_z = 0.0 
 
-#ros2 topic echo /simple_diff_drive_controller/odom --filter "m.transforms[0].child_frame_id =='base_footprint'"
+ 
+ #Stops or resumes exploration 
+class ExploreStop(Node): 
+    def __init__(self): 
+        super().__init__('Exploration_stop_publisher') 
+        self.ExStop = Bool()
+        self.ExStop.data = True
+        self.publisher = self.create_publisher(Bool, 'explore/resume', 10)
+        self.get_logger().info('Image proc explore supervisior init') 
+        
+    def resume(self):
+        self.ExStop.data = True
+        self.publisher.publish(ExStop)
+        self.get_logger().info(f'Send message to explore, value:  %s' %(self.ExStop.data))
+    
+    def stop(self):
+        self.ExStop.data = False
+        self.publisher.publish(self.ExStop)
+        self.get_logger().info(f'Send message to explore, value:  %s' %(self.ExStop.data))
  
  
 class ArrowMarkerPublisher(Node):
@@ -36,40 +55,24 @@ class ArrowMarkerPublisher(Node):
         
         
     def publish_marker(self, xpos, ypos):
-    
-    
         marker = Marker()
         
-        #marker.header.frame_id = 'base_link'
-        marker.header.frame_id = 'map'
+        marker.header.frame_id = 'base_link'
+        #marker.header.frame_id = 'map'
         marker.type = Marker.CYLINDER
         
         marker.id = self.marker_id
         
-        marker.frame_locked=True
-        
-        #get correlation between maps 
-        global actual_position_x     
-        global actual_position_y     
-        global actual_position_z 
-        global actual_orientation_z
-        distance = math.sqrt( xpos*xpos + ypos*ypos)
-        view_angle = float(math.sin(ypos/distance))
-        total_angle =  actual_orientation_z + view_angle #oder andersrum 
-        total_pos_x = actual_position_x -  float(math.cos(math.pi - total_angle)*distance)
-        total_pos_y = actual_position_y -  float(math.sin(math.pi - total_angle)*distance)
-        
+        #marker.frame_locked=True
            
         marker.pose.orientation.y = 0.0
         marker.pose.position.x = xpos
         marker.pose.position.y = ypos
-        #marker.pose.position.x = total_pos_x
-        #marker.pose.position.y = total_pos_y
         #marker.pose.position.x = actual_position_y
         #marker.pose.position.y = -actual_position_x
         marker.pose.position.z = 0.0
-        marker.scale.x = 0.4  # Shaft diameter
-        marker.scale.y = 0.4  # Head diameter
+        marker.scale.x = 0.2  # Shaft diameter
+        marker.scale.y = 0.2  # Head diameter
         marker.scale.z = 1.0  # Head length
         marker.color.r = 0.0
         marker.color.g = 1.4
@@ -81,163 +84,116 @@ class ArrowMarkerPublisher(Node):
         self.get_logger().info(f'Marker published with ID: %d' %(marker.id))
         self.marker_id += 1 
 
-       
-class OdometrySubscriber(Node):
-    def __init__(self):
-        super().__init__('map_subscriber')
-        self.subscription = self.create_subscription(
-            Odometry,
-            'simple_diff_drive_controller/odom',  # Replace 'odom' with the actual topic name
-            self.odom_callback,
-            10
-        )
-        self.subscription
-        print("Subscriber created") 
-
-    def odom_callback(self, msg): 
-        #position = msg.pose.pose.position
-        #orientation = msg.pose.pose.orientation 
-        global actual_position_x     
-        global actual_position_y     
-        global actual_position_z 
-        global actual_orientation_z
-        actual_position_x = msg.pose.pose.position.x
-        actual_position_y = msg.pose.pose.position.y
-        actual_position_z = msg.pose.pose.position.z
-        actual_orientation_z = msg.pose.pose.orientation.z
-
            
         
 class ImageSubscriber(Node):
-  """
-  Create an ImageSubscriber class, which is a subclass of the Node class.
-  """
-  def __init__(self):
     """
-    Class constructor to set up the node
+    Create an ImageSubscriber class, which is a subclass of the Node class.
     """
-    #create marker object
-    self.marker_obj = ArrowMarkerPublisher()
-     
-    # Initiate the Node class's constructor and give it a name
-    super().__init__('image_subscriber')
-      
-    # Create the subscriber. This subscriber will receive an Image
-    # from the video_frames topic. The queue size is 10 messages.
-    self.subscription = self.create_subscription(
-      Image, 
-      'camera/image_raw', 
-      self.listener_callback, 
-      10)
-    self.subscription # prevent unused variable warning
-      
-    # Used to convert between ROS and OpenCV images
-    self.br = CvBridge()
-
-
-
-#Es funktioniert! Lach nicht! 
-    self.subscription1 = self.create_subscription(
-            Odometry,
-            'simple_diff_drive_controller/odom',  
-            self.odom_callback,
-            10
-        )
-    self.subscription1
-
-       
-  def odom_callback(self, msg): 
-    #position = msg.pose.pose.position
-    #orientation = msg.pose.pose.orientation 
-    global actual_position_x     
-    global actual_position_y     
-    global actual_position_z 
-    global actual_orientation_z
-    actual_position_x = msg.pose.pose.position.x
-    actual_position_y = msg.pose.pose.position.y
-    actual_position_z = msg.pose.pose.position.z   
-    actual_orientation_z =msg.pose.pose.orientation.z
-
-    #self.get_logger().info(f"Robot Position: x={position.x:.2f}, y={position.y:.2f}, z={position.z:.2f}")
-
-
-  def listener_callback(self, data):
-    """
-    Callback function.
-    """
-    if PositionMarked == 0: 
-        self.subscription.destroy()
+    def __init__(self):
+        """
+        Class constructor to set up the node
+        """
+        #create marker object
+        self.marker_obj = ArrowMarkerPublisher()
         
-    # Convert ROS Image message to OpenCV image
-    current_frame = self.br.imgmsg_to_cv2(data)
-    
-    current_frame_rgb = cv2.cvtColor(current_frame, cv2.COLOR_RGB2BGR)
-    self.get_yellow_object_coordinates(current_frame_rgb)
-    
-    global alive 
-    if alive > 200: 
-        self.get_logger().info('Image process alive')
-        alive = 0 
-    alive += 1 
- 
-      
-  def get_yellow_object_coordinates(self, image):
-    global PositionMarked
- 
-    # Konvertiere das Bild von BGR zu HSV Farbraum
-   # hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-    # Definiere den Farbbereich für Gelb im HSV Farbraum
-    lower_yellow = np.array([0, 100, 100], dtype=np.uint8)
-    upper_yellow = np.array([30, 255, 255], dtype=np.uint8)
-    
-    # Erzeuge eine Maske für den gelben Farbbereich
-    yellow_mask = cv2.inRange(image, lower_yellow, upper_yellow)
-
-    # Finde Konturen im Bild
-    contours, _ = cv2.findContours(yellow_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Sortiere die Konturen nach ihrer Fläche in absteigender Reihenfolge
-    contours = sorted(contours, key=cv2.contourArea, reverse=True)
-
-    if len(contours)>0: 
-        # Extrahiere die Kontur mit der größten Fläche
-        largest_contour = contours[0]
-
-    
-        # Berechne das Begrenzungsrechteck um die Kontur
-        x, y, w, h = cv2.boundingRect(largest_contour)
+        #create exploration supervisor object 
+        self.explore_obj = ExploreStop() 
         
-        if w > MINIMUM_YELLOW and PositionMarked > 0:
-            PositionMarked -= 1
+        # Initiate the Node class's constructor and give it a name
+        super().__init__('image_subscriber')
+        
+        # Create the subscriber. This subscriber will receive an Image
+        # from the video_frames topic. The queue size is 10 messages.
+        self.subscription = self.create_subscription(
+        Image, 
+        'camera/image_raw', 
+        self.listener_callback, 
+        10)
+        self.subscription # prevent unused variable warning
+        
+        # Used to convert between ROS and OpenCV images
+        self.br = CvBridge()
+
+
+    def listener_callback(self, data):
+        """
+        Callback function.
+        """
+        if PositionMarked == 0: 
+            self.subscription.destroy()
             
-            # Extrahiere die Anzahl der X- und Y-Pixel
-            height, width, _ = image.shape
+        # Convert ROS Image message to OpenCV image
+        current_frame = self.br.imgmsg_to_cv2(data)
+        
+        current_frame_rgb = cv2.cvtColor(current_frame, cv2.COLOR_RGB2BGR)
+        self.get_yellow_object_coordinates(current_frame_rgb)
+        
+        global alive 
+        if alive > 200: 
+            self.get_logger().info('Image process alive')
+            alive = 0 
+        alive += 1 
+ 
+      
+    def get_yellow_object_coordinates(self, image):
+        global PositionMarked
+    
+        # Konvertiere das Bild von BGR zu HSV Farbraum
+    # hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+        # Definiere den Farbbereich für Gelb im HSV Farbraum
+        lower_yellow = np.array([0, 150, 150], dtype=np.uint8)
+        upper_yellow = np.array([30, 255, 255], dtype=np.uint8)
+        
+        # Erzeuge eine Maske für den gelben Farbbereich
+        yellow_mask = cv2.inRange(image, lower_yellow, upper_yellow)
+
+        # Finde Konturen im Bild
+        contours, _ = cv2.findContours(yellow_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Sortiere die Konturen nach ihrer Fläche in absteigender Reihenfolge
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)
+
+        if len(contours)>0: 
+            # Extrahiere die Kontur mit der größten Fläche
+            largest_contour = contours[0]
+
+        
+            # Berechne das Begrenzungsrechteck um die Kontur
+            x, y, w, h = cv2.boundingRect(largest_contour)
+            
+            if w > MINIMUM_YELLOW and PositionMarked > 0:
+                PositionMarked -= 1
                 
-            
-            if(x>=height/4) and (x+w<=(height/4)*3):
-                inCenterOfPicture=1
-            else:
-                inCenterOfPicture=0
+                # Extrahiere die Anzahl der X- und Y-Pixel
+                height, width, _ = image.shape
+                    
+                
+                if(x>=height/4) and (x+w<=(height/4)*3):
+                    inCenterOfPicture=1
+                else:
+                    inCenterOfPicture=0
 
-            object_coordinates = x, y, x+w, y+h ,width ,height 
-            yel_pos = calculate_distance_compesated(object_coordinates)
-            
-            fxpos = float(math.cos(yel_pos[1]) * yel_pos[0]) 
-            fypos = float(math.sin(yel_pos[1]) * yel_pos[0])
-            
-            self.get_logger().info(f'Calculated X-Position: %d' %(fxpos))
-            self.get_logger().info(f'Calculated Y-Position: %d' %(fypos))
+                object_coordinates = x, y, x+w, y+h ,width ,height 
+                yel_pos = calculate_distance_compesated(object_coordinates)
+                
+                fxpos = float(math.cos(yel_pos[1]) * yel_pos[0]) 
+                fypos = float(math.sin(yel_pos[1]) * yel_pos[0])
+                
+                self.get_logger().info(f'Calculated X-Position: %d' %(fxpos))
+                self.get_logger().info(f'Calculated Y-Position: %d' %(fypos))
 
-            #Publish marker on calculated position
-            
-            self.marker_obj.publish_marker(xpos=fxpos, ypos=fypos)
-
+                #stop exploration 
+                self.explore_obj.stop() 
+                
+                #Publish marker on calculated position
+                self.marker_obj.publish_marker(xpos=fxpos+0.25, ypos=fypos)
 
 
 
 def calculate_distance_compesated(object_coordinates):
-    hoizontal_fow = 1.3962634
+    hoizontal_fow = 80.0*math.pi/180.0
     vertical_fow = hoizontal_fow
 
     y=object_coordinates[1]+(object_coordinates[3]-object_coordinates[1])/2  #y plus halbe hohe
@@ -245,7 +201,8 @@ def calculate_distance_compesated(object_coordinates):
     
     Pixel_Nr_X          = object_coordinates[4] #800 
     Pixel_Nr_Y          = object_coordinates[5] #800 
-    camera_Hight        = 0.2  # in m
+    camera_Hight        = 0.15  # in m
+    camera_y_offset = 0.25
     Offset_Winkel_rad   = 0 #-0.78 #kammera 45° negativ gegen horizontal  
     winkel_rad = 0
     
@@ -265,7 +222,7 @@ def calculate_distance_compesated(object_coordinates):
     
     winkel_rad=math.atan2(yunterehalfte , distance_in_px_relative_to_virtual_far_plane)
     winkel_rad= -winkel_rad
-    winkel_rad=winkel_rad+Offset_Winkel_rad+1.57 #+90 grad
+    winkel_rad=winkel_rad+Offset_Winkel_rad+math.pi/2 #+90 grad
     
     abstand = math.tan(winkel_rad) * camera_Hight
 
@@ -277,33 +234,31 @@ def calculate_distance_compesated(object_coordinates):
     winkel_fur_pixel=math.atan2(yunterehalfte , distance_in_px_relative_to_virtual_far_plane)
     
     winkel_rad= -winkel_fur_pixel
-    winkel_rad=winkel_rad+Offset_Winkel_rad+1.57 #+90 grad
+    winkel_rad=winkel_rad+Offset_Winkel_rad+math.pi/2 #+90 grad
     
     abstand = math.tan(winkel_rad) * camera_Hight
 
-    return (abstand,x_winkel_rad)
+    #return (abstand+camera_y_offset,x_winkel_rad)
+    return (abstand, x_winkel_rad)
   
 
 def main(args=None):
+    # Initialize the rclpy library
+    rclpy.init(args=args)
+    
+    # Create the node
+    image_subscriber = ImageSubscriber()
 
-
-  
-  # Initialize the rclpy library
-  rclpy.init(args=args)
-  
-  # Create the node
-  image_subscriber = ImageSubscriber()
-
-  # Spin the node so the callback function is called.
-  rclpy.spin(image_subscriber)
-  
-  # Destroy the node explicitly
-  # (optional - otherwise it will be done automatically
-  # when the garbage collector destroys the node object)
-  image_subscriber.destroy_node()
-  
-  # Shutdown the ROS client library for Python
-  rclpy.shutdown()
+    # Spin the node so the callback function is called.
+    rclpy.spin(image_subscriber)
+    
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    image_subscriber.destroy_node()
+    
+    # Shutdown the ROS client library for Python
+    rclpy.shutdown()
   
 if __name__ == '__main__':
   main()

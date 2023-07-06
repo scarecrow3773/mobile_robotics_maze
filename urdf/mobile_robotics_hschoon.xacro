@@ -6,6 +6,9 @@
   <material name="Grey">
     <color rgba="0.7 0.7 0.7 1.0"/>
   </material>
+  <material name="barbiepink" >
+    <color rgba="0.996078431372549 0.27450980392156865 0.6470588235294118 1.0" />
+  </material>
 
 
 
@@ -28,10 +31,9 @@
         </collision>
         <visual name="chassis">
             <geometry>
-                <mesh filename="$(find mobile_robotics_hschoon)/meshes/chassis_v2.stl" scale="1.5 1.5 1.5" />
+                <mesh filename="$(find mobile_robotics_hschoon)/meshes/chassis.dae" scale="1.5 1.5 1.5" />
             </geometry>
             <origin xyz="0.0 0.0 0.05" rpy="0 0 3.14159"/>
-            <!-- <material name="Grey" /> -->
         </visual>
     </link>       
 
@@ -43,7 +45,7 @@
         </inertial>
         <collision name="castor">
             <geometry>
-                <sphere radius=".043" /> <!-- HERE: ".04275" -->
+                <sphere radius=".043" />
             </geometry>
         </collision>              
         <visual name="castor">
@@ -117,9 +119,9 @@
 <!-- libgazebo_ros_camera Link - forward facing camera -->
   <link name="camera_point_link">
     <collision>
-      <origin xyz="0 0 0.3" rpy="0 0 0"/>
+      <origin xyz="0 0.2 0.3" rpy="0 0 0"/>
       <geometry>
-    <box size="0.1 0.1 0.1"/>
+         <box size="0.1 0.1 0.1"/>
       </geometry>
     </collision>
     
@@ -180,7 +182,7 @@
     </joint>
         <joint name="camera_joint" type="fixed">
         <axis xyz="0 1 0" />
-        <origin xyz="-0.1 0 .2" rpy="0 0 0"/>
+        <origin xyz="0.25 0.0 0.15" rpy="0 0 0"/>
         <parent link="base_link"/>
         <child link="camera_point_link"/>
             <dynamics damping="0.7"/>
@@ -234,7 +236,7 @@
 
 <!-- Gazebo references -->  
   <gazebo reference="chassis">
-  	<material>Gazebo/Green</material>
+  	<material>Gazebo/DarkGrey</material>
     	<mu1>.01</mu1>
     	<mu2>.01</mu2>  	
         <fdir1>0.000000 0.000000 0.000000</fdir1>
@@ -243,7 +245,7 @@
   </gazebo>  
  
   <gazebo reference="left_wheel">
-    	<material>Gazebo/Red</material>
+    	<material>Gazebo/FlatBlack</material>
     	<mu1>100000</mu1>
     	<mu2>100000</mu2>
         <fdir1>0.000000 0.000000 0.000000</fdir1>
@@ -252,7 +254,7 @@
   </gazebo>  
 
   <gazebo reference="right_wheel">
-    	<material>Gazebo/Yellow</material>
+    	<material>Gazebo/FlatBlack</material>
     	<mu1>100000</mu1>
     	<mu2>100000</mu2>  	
         <fdir1>0.000000 0.000000 0.000000</fdir1>
@@ -261,7 +263,7 @@
   </gazebo>  
   
   <gazebo reference="castor">
-  	<material>Gazebo/Blue</material>
+  	<material>Gazebo/FlatBlack</material>
     	<mu1>.01</mu1>
     	<mu2>.01</mu2>  	
         <fdir1>0.000000 0.000000 0.000000</fdir1>
