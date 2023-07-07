@@ -40,9 +40,9 @@ def generate_launch_description():
         parameters=[params]
     )
 
-    #position = [0.6, 0.8, 1] 
+    position = [0.6, 0.8, 1] 
     #position = [19, 25, 1]  
-    position = [21, 24, .2]                   
+    #position = [21, 24, .2]                   
     orientation = [0.0, 0.0, -0.7]
     #orientation = [0.0, 0.0, -1.7]
     #orientation = [0.0, 0.0, 0.0]

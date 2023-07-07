@@ -273,7 +273,7 @@
 	
   <gazebo reference="camera_point_link">
     <sensor type="camera" name="camera">
-      <update_rate>30.0</update_rate>
+      <update_rate>5.0</update_rate>
       <camera name="head">
         <pose>0 0 0 0 0 0</pose>
         <horizontal_fov>1.3962634</horizontal_fov>
@@ -335,7 +335,7 @@
         </scan>
         <range>
           <min>0.120000</min>
-          <max>8.0</max>
+          <max>9.15</max>
           <resolution>0.015000</resolution>
         </range>
         <noise>

@@ -15,16 +15,10 @@ from std_msgs.msg import Bool
 from nav_msgs.msg import Odometry
 
 #globall variables
-MINIMUM_YELLOW = 100 
-PositionMarked = 80
-alive = 0 
+MINIMUM_YELLOW = 150 
+PositionMarked = 5
 
-actual_position_x = 0.0
-actual_position_y = 0.0 
-actual_position_z = 0.0 
-actual_orientation_z = 0.0 
 
- 
  #Stops or resumes exploration 
 class ExploreStop(Node): 
     def __init__(self): 
@@ -45,10 +39,10 @@ class ExploreStop(Node):
         self.get_logger().info(f'Send message to explore, value:  %s' %(self.ExStop.data))
  
  
-class ArrowMarkerPublisher(Node):
+class MarkerPublisher(Node):
     def __init__(self):
         super().__init__('arrow_marker_publisher')
-        self.publisher_ = self.create_publisher(Marker, 'arrow_marker', 10)
+        self.publisher_ = self.create_publisher(Marker, 'yellow_marker', 10)
         
         self.marker_id = 0
         self.get_logger().info('Image process init')
@@ -57,7 +51,8 @@ class ArrowMarkerPublisher(Node):
     def publish_marker(self, xpos, ypos):
         marker = Marker()
         
-        marker.header.frame_id = 'base_link'
+        #marker.header.frame_id = 'base_link'
+        marker.header.frame_id = 'camera_point_link'
         #marker.header.frame_id = 'map'
         marker.type = Marker.CYLINDER
         
@@ -68,8 +63,6 @@ class ArrowMarkerPublisher(Node):
         marker.pose.orientation.y = 0.0
         marker.pose.position.x = xpos
         marker.pose.position.y = ypos
-        #marker.pose.position.x = actual_position_y
-        #marker.pose.position.y = -actual_position_x
         marker.pose.position.z = 0.0
         marker.scale.x = 0.2  # Shaft diameter
         marker.scale.y = 0.2  # Head diameter
@@ -95,7 +88,7 @@ class ImageSubscriber(Node):
         Class constructor to set up the node
         """
         #create marker object
-        self.marker_obj = ArrowMarkerPublisher()
+        self.marker_obj = MarkerPublisher()
         
         #create exploration supervisor object 
         self.explore_obj = ExploreStop() 
@@ -128,22 +121,13 @@ class ImageSubscriber(Node):
         
         current_frame_rgb = cv2.cvtColor(current_frame, cv2.COLOR_RGB2BGR)
         self.get_yellow_object_coordinates(current_frame_rgb)
-        
-        global alive 
-        if alive > 200: 
-            self.get_logger().info('Image process alive')
-            alive = 0 
-        alive += 1 
- 
+         
       
     def get_yellow_object_coordinates(self, image):
         global PositionMarked
-    
-        # Konvertiere das Bild von BGR zu HSV Farbraum
-    # hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        # Definiere den Farbbereich für Gelb im HSV Farbraum
-        lower_yellow = np.array([0, 150, 150], dtype=np.uint8)
+        # Definiere den Farbbereich für Gelb im BGR Farbraum
+        lower_yellow = np.array([0, 100, 100], dtype=np.uint8)
         upper_yellow = np.array([30, 255, 255], dtype=np.uint8)
         
         # Erzeuge eine Maske für den gelben Farbbereich
@@ -158,7 +142,6 @@ class ImageSubscriber(Node):
         if len(contours)>0: 
             # Extrahiere die Kontur mit der größten Fläche
             largest_contour = contours[0]
-
         
             # Berechne das Begrenzungsrechteck um die Kontur
             x, y, w, h = cv2.boundingRect(largest_contour)
@@ -168,13 +151,7 @@ class ImageSubscriber(Node):
                 
                 # Extrahiere die Anzahl der X- und Y-Pixel
                 height, width, _ = image.shape
-                    
                 
-                if(x>=height/4) and (x+w<=(height/4)*3):
-                    inCenterOfPicture=1
-                else:
-                    inCenterOfPicture=0
-
                 object_coordinates = x, y, x+w, y+h ,width ,height 
                 yel_pos = calculate_distance_compesated(object_coordinates)
                 
@@ -188,7 +165,7 @@ class ImageSubscriber(Node):
                 self.explore_obj.stop() 
                 
                 #Publish marker on calculated position
-                self.marker_obj.publish_marker(xpos=fxpos+0.25, ypos=fypos)
+                self.marker_obj.publish_marker(xpos=fxpos, ypos=fypos)
 
 
 
@@ -201,11 +178,10 @@ def calculate_distance_compesated(object_coordinates):
     
     Pixel_Nr_X          = object_coordinates[4] #800 
     Pixel_Nr_Y          = object_coordinates[5] #800 
-    camera_Hight        = 0.15  # in m
-    camera_y_offset = 0.25
+    camera_Hight        = 0.25  # in m
+    #camera_y_offset = 0.25
     Offset_Winkel_rad   = 0 #-0.78 #kammera 45° negativ gegen horizontal  
     winkel_rad = 0
-    
     
     distance_in_px_relative_to_virtual_far_plane = (Pixel_Nr_Y/2) / math.tan((hoizontal_fow/2)) 
     
@@ -230,7 +206,6 @@ def calculate_distance_compesated(object_coordinates):
 
     distance_in_px_relative_to_virtual_far_plane=distance_in_px_relative_to_virtual_far_plane / math.cos(abs(x_winkel_rad))  #seitliche kompensation 
     
-
     winkel_fur_pixel=math.atan2(yunterehalfte , distance_in_px_relative_to_virtual_far_plane)
     
     winkel_rad= -winkel_fur_pixel
