@@ -1,5 +1,4 @@
 # Mobile Robotics Course Assessment Task - 2023
-# Heiko Schoon, Matr.-Nr. 7013850
 
 Autonomous robot that builds a map of the maze (world), identifes the yellow block and reports the position of this block back by posting a specific marker message.
 
