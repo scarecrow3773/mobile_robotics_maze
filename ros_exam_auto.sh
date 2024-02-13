@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export GAZEBO_MODEL_PATH=~/ros2_ws/src/mobile_robotics_hschoon/meshes
 cd ~/ros2_ws/
 . install/local_setup.sh
 source /opt/ros/humble/setup.sh
